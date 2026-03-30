@@ -1,0 +1,12 @@
+{
+  "name": "noc-websocket-service",
+  "version": "1.0.0",
+  "description": "NOC WebSocket Service for Real-time Notifications",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "bun --hot run index.ts"
+  },
+  "dependencies": {
+    "socket.io": "^4.7.2"
+  }
+}

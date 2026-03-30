@@ -1,0 +1,11 @@
+[
+    {
+        "id": "mem_1774909132493",
+        "context": "Vendor: Cisco, Type: Router, Event: BGP_PEER bgp_down, Message: BGP neighbor 10.0.0.1 is down, MTU mismatch detected",
+        "remediation": "interface gigabitethernet 0/1\n mtu 9000\n router bgp 65000\n neighbor 10.0.0.1 clear",
+        "root_cause": "MTU configuration mismatch on peering interface",
+        "timestamp": "2026-03-30T22:18:52.493476",
+        "hits": 3,
+        "last_used": "2026-03-30T22:19:41.787769"
+    }
+]

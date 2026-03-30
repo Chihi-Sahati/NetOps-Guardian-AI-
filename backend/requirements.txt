@@ -1,0 +1,42 @@
+# NetOps Guardian AI v1.0 - Python Dependencies
+# Author: Hussein | Supervisor: Dr. Houda Chihi
+
+# Core Framework
+python-dotenv>=1.0.0
+fastapi>=0.111.0
+uvicorn>=0.26.1
+
+# Redis Cache
+redis>=5.0.0
+
+# Network Protocols
+ncclient>=0.6.13  # NETCONF
+paramiko>=3.4.0   # SSH
+requests>=2.31.0  # RESTCONF
+grpcio>=1.60.0    # gNMI
+
+# Data Processing
+pydantic>=2.5.0
+numpy>=1.26.0
+
+# ML/AI (Quantized Inference)
+onnxruntime>=1.16.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# Observability
+prometheus-client>=0.19.0
+structlog>=23.2.0
+
+# Security
+cryptography>=41.0.0
+jwt>=1.3.1
+
+# Semantic Caching
+scikit-learn>=1.3.2
+
+# Execution Isolation
+docker>=7.0.0

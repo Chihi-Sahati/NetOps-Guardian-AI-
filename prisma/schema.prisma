@@ -1,0 +1,203 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// NET'S AI SECURITY AGENT
+// Multi-Vendor Network Operations Center
+// Developed under supervision of Dr. Houda Chihi
+// ============================================
+
+// User Management with Zero Trust
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  password      String
+  role          String   @default("operator") // admin, operator, viewer
+  department    String?
+  isActive      Boolean  @default(true)
+  lastLogin     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  sessions      Session[]
+  auditLogs     SecurityAudit[]
+  tasks         ProvisioningTask[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token        String   @unique
+  deviceInfo   String?
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  
+  @@index([userId])
+  @@index([token])
+}
+
+// Network Elements (Multi-Vendor)
+model NetworkElement {
+  id              String   @id @default(cuid())
+  name            String
+  hostname        String   @unique
+  ipAddress       String
+  vendor          String   // Cisco, Huawei, Nokia, Juniper, Ericsson, TP-LINK
+  model           String?
+  osVersion       String?
+  elementType     String   // Router, Switch, Firewall, Server, etc.
+  site            String?
+  region          String?
+  status          String   @default("unknown") // active, inactive, maintenance, unknown
+  lastSeen        DateTime?
+  capabilities    String?  // JSON string of supported protocols
+  credentials     String?  // Encrypted credentials reference
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  alarms          Alarm[]
+  logs            Log[]
+  provisioningTasks ProvisioningTask[]
+  
+  @@index([vendor])
+  @@index([status])
+  @@index([site])
+  @@index([region])
+}
+
+// Vendor Configuration
+model VendorConfig {
+  id              String   @id @default(cuid())
+  vendorName      String   @unique
+  protocols       String   // JSON: ["NETCONF", "SSH", "SNMP", "RESTCONF"]
+  defaultPort     Int
+  apiEndpoint     String?
+  credentials     String?  // Encrypted
+  configTemplates String?  // JSON
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Alarms Management
+model Alarm {
+  id              String   @id @default(cuid())
+  networkElementId String
+  networkElement   NetworkElement @relation(fields: [networkElementId], references: [id])
+  severity        String   // critical, major, minor, warning, info
+  alarmCode       String
+  alarmName       String
+  description     String?
+  source          String?  // IP or hostname of source
+  category        String?  // Security, Performance, Connectivity, Hardware
+  status          String   @default("active") // active, acknowledged, cleared
+  acknowledgedBy  String?
+  acknowledgedAt  DateTime?
+  clearedAt       DateTime?
+  firstSeen       DateTime @default(now())
+  lastSeen        DateTime @default(now())
+  count           Int      @default(1)
+  rawMessage      String?  // Original alarm message
+  metadata        String?  // JSON for additional data
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Logs/Access Centralization
+model Log {
+  id              String   @id @default(cuid())
+  networkElementId String?
+  networkElement   NetworkElement? @relation(fields: [networkElementId], references: [id], onDelete: SetNull)
+  timestamp       DateTime @default(now())
+  logLevel        String   // emergency, alert, critical, error, warning, notice, info, debug
+  facility        String?  // SYSLOG facility
+  source          String?  // IP or hostname
+  process         String?
+  message         String
+  rawLog          String?  // Original log line
+  parsed          Boolean  @default(false)
+  logType         String   @default("system") // system, security, audit, config, performance
+  metadata        String?  // JSON for additional parsed data
+  createdAt       DateTime @default(now())
+  
+  @@index([networkElementId])
+  @@index([logLevel])
+  @@index([logType])
+  @@index([timestamp])
+}
+
+// Provisioning Tasks
+model ProvisioningTask {
+  id              String   @id @default(cuid())
+  networkElementId String
+  networkElement   NetworkElement @relation(fields: [networkElementId], references: [id])
+  createdById     String
+  createdBy       User     @relation(fields: [createdById], references: [id])
+  taskType        String   // config_push, firmware_update, backup, restore, provision
+  status          String   @default("pending") // pending, in_progress, completed, failed
+  priority        String   @default("medium") // low, medium, high, critical
+  description     String?
+  configData      String?  // JSON configuration to apply
+  protocol        String?  // NETCONF, SSH, RESTCONF
+  scheduledAt     DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  result          String?  // Success/Failure message
+  errorDetails    String?
+  retryCount      Int      @default(0)
+  maxRetries      Int      @default(3)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Security Audit (Zero Trust)
+model SecurityAudit {
+  id              String   @id @default(cuid())
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id])
+  action          String   // login, logout, config_change, access_granted, access_denied
+  resource        String?  // What resource was accessed
+  resourceType    String?  // network_element, config, log, alarm
+  result          String   // success, failure, denied
+  ipAddress       String?
+  userAgent       String?
+  details         String?  // JSON with additional details
+  riskLevel       String   @default("low") // low, medium, high, critical
+  timestamp       DateTime @default(now())
+}
+
+// System Configuration
+model SystemConfig {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  value           String
+  description     String?
+  category        String?  // security, network, notification, etc.
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Notification Rules
+model NotificationRule {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  condition       String   // JSON condition
+  channels        String   // JSON: ["email", "sms", "webhook", "websocket"]
+  recipients      String?  // JSON list of recipients
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
